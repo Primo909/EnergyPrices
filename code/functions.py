@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.neural_network import MLPRegressor
+from sklearn import linear_model
 
 def get_best_features(data, n_features):
     """
@@ -75,8 +76,8 @@ def train_model_country(data_country_input, n_features,model_type="rf",  test_si
         4. train the model: either NN or RF
     
     Parameters:
-        model_type: 'rf' | 'nn', str
-            type of the model to train, 'rf' for random forest and 'nn' for neural network
+        model_type: 'rf' | 'nn' | 'lr', str
+            type of the model to train, 'rf' for random forest, 'lr' for linear regression and 'nn' for neural network
         data_country: DataFrame
             cleaned data for a given country (no Nans etc)
         n_features: int
@@ -113,7 +114,95 @@ def train_model_country(data_country_input, n_features,model_type="rf",  test_si
                 'hidden_layer_sizes': (16,16,14)
             }
         model = MLPRegressor(**model_parameters)
+    elif model_type.lower() == 'lr':
+       model = linear_model.LinearRegression() 
+    elif model_type.lower() == 'rf':
+        if model_parameters == None:
+            # these parameters worked okay for project 1
+            model_parameters = {
+                'bootstrap': True,
+                'min_samples_leaf': 2,
+                'n_estimators': 10, 
+                'min_samples_split': 3,
+                'max_features': 10,
+                'max_depth': 10,
+                'max_leaf_nodes': None}
+            
+        model = RandomForestRegressor(**model_parameters)
+
+    model.fit(x_train, y_train)
+    predictions = model.predict(x_test)
+
+    predictions = pd.Series(predictions, index=y_test.index).sort_index()
+    y_test = y_test.sort_index()
+
+
+    # to calculate errors, we have to rescale the data back using original parameters
+    predictions = predictions * params.loc['DayAheadPrice', 'Std'] + params.loc['DayAheadPrice', 'Mean']
+    y_test = y_test * params.loc['DayAheadPrice', 'Std'] + params.loc['DayAheadPrice', 'Mean']
+    err = get_errors(y_test, predictions)
+
+    #display(err)
+    #plot_predictions(y_test, predictions)
     
+    return model, params, selected_features, err, predictions
+def day_split(data_country, features, day):
+    data_country=data_country.dropna()
+    y = data_country['DayAheadPrice']
+    x = data_country[features]
+    x_train, x_test, y_train, y_test = x[x.index<day], x.loc[day], y[y.index<day], y.loc[day]
+    print("AJLKAJLKAJ")
+    return x_train, x_test, y_train, y_test
+def train_model_country_day(data_country_input, day, n_features,model_type="rf", model_parameters=None):
+    """
+    Train a ML model. This function does the following:
+        1. rescales the input data
+        2. train test split
+        3. feature selection on the training data
+        4. train the model: either NN or RF
+    
+    Parameters:
+        model_type: 'rf' | 'nn' | 'lr', str
+            type of the model to train, 'rf' for random forest, 'lr' for linear regression and 'nn' for neural network
+        data_country: DataFrame
+            cleaned data for a given country (no Nans etc)
+        n_features: int
+            number of best features to select
+        model_parameters: dict
+            dictionary with model parameters, which are parameters for either 
+            MLPRegressor or RandomForestRegressor from sklearn
+    
+    
+    Out:
+        model: object
+            sklearn model
+        params: DataFrame
+            parameters used for rescaling the data; predictions have to be scaled back 
+            for error calculation and out-of-sample new data must be scaled using these params
+        selected_features: list or Index, not sure
+            features used in training this model
+        err: Series
+            errors for predictions
+    """
+    data_country = data_country_input.copy()
+    data_country, params = rescale(data_country)
+    print("h1")
+    x_train, x_test, y_train, y_test = day_split(data_country, data_country.columns[1:],day)
+    print("h2")
+    selected_features = get_best_features(x_train, n_features)
+
+    x_train = x_train[selected_features]
+    x_test = x_test[selected_features]
+
+    if model_type.lower() == 'nn':
+        if model_parameters == None:
+            # these parameters worked okay for project 1
+            model_parameters = {
+                'hidden_layer_sizes': (16,16,14)
+            }
+        model = MLPRegressor(**model_parameters)
+    elif model_type.lower() == 'lr':
+       model = linear_model.LinearRegression() 
     elif model_type.lower() == 'rf':
         if model_parameters == None:
             # these parameters worked okay for project 1
