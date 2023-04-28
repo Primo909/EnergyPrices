@@ -4,5 +4,5 @@ Dashboard that predicts energy prices in some Balkan countries: Slovenia, Croati
 run dashboard with command
 
 ´´´
-$ python3 code/test.py
+$ python3 code/app.py
 ´´´

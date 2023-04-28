@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 
 from plots import * 
 
-template_main='simple_white'
+template_main='plotly_white'
 def update_graph(fig):
     return fig.update_layout(
                         template=template_main,
@@ -122,7 +122,7 @@ def drawDayChooser():
                     id='day_chooser',
                     min_date_allowed=date(2022, 2, 1),
                     max_date_allowed=date(2022, 11, 25),
-                    date=date(2022, 6, 21)
+                    date=date(2022, 7, 21)
                 )
                 ],
                 )
@@ -212,7 +212,7 @@ tabs = html.Div(
                     tabClassName="flex-grow-1 text-center",)
             ],
             id="tabs",
-            active_tab="tab-4",
+            active_tab="tab-1",
         ),
         html.Div(id="content"),
     ]
@@ -306,11 +306,11 @@ tab3_content=html.Div([
         dbc.CardBody([
             dbc.Row([
                 dbc.Col([
-                    drawText("Prediction of DayAheadPrice for the next Day")
-                ], width=6),
+                    drawText("Prediction of DayAheadPrice (EUR / MWh) for the next Day")
+                ], width=8),
                 dbc.Col([
                     drawDayChooser()
-                ], width=6),
+                ], width=4),
             ], align='center'), 
             html.Br(),
             dbc.Row([
@@ -389,7 +389,6 @@ def update_plotPrice(code, roll_window=24):
     Input("exclude_features","value")])
 def update_plotPricePrediction(code,n_features,model_type, test_size, exclude_features, roll_window=24):
     test_size=1-test_size/100
-    print(exclude_features)
     fig, selected_features, err= plotPricePrediction(code, n_features, model_type, test_size, exclude_features, roll_window)
     html_P = ', '.join(selected_features)
     html_table = generate_table(err)
@@ -415,10 +414,8 @@ def update_map_callback1(column,start,end):
 )
 def update_plotDayPrediction(date,n_features=12,model_type='rf',exclude_features=["Price-1","Price-2"]):
     fig,a,table = plotDayPrediction(date,n_features,model_type='rf',exclude_features=["Price-1","Price-2"])
-    print(table)
     table = generate_dataframe_table(table) 
-    print(table)
-    return update_graph(fig).update_layout(height=1200, width=1200),table
+    return update_graph(fig),table#.update_layout(height=1200, width=1200),table
 
 
 app.run_server(debug=True,port=8660)

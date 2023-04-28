@@ -151,7 +151,6 @@ def day_split(data_country, features, day):
     y = data_country['DayAheadPrice']
     x = data_country[features]
     x_train, x_test, y_train, y_test = x[x.index<day], x.loc[day], y[y.index<day], y.loc[day]
-    print("AJLKAJLKAJ")
     return x_train, x_test, y_train, y_test
 def train_model_country_day(data_country_input, day, n_features,model_type="rf", model_parameters=None):
     """
@@ -186,9 +185,7 @@ def train_model_country_day(data_country_input, day, n_features,model_type="rf",
     """
     data_country = data_country_input.copy()
     data_country, params = rescale(data_country)
-    print("h1")
     x_train, x_test, y_train, y_test = day_split(data_country, data_country.columns[1:],day)
-    print("h2")
     selected_features = get_best_features(x_train, n_features)
 
     x_train = x_train[selected_features]

@@ -19,7 +19,7 @@ path = './'
 def load_augumented(code):
     file = path + 'data/augumented/' + code + '.pkl'
     with open(file, 'rb') as f:
-        df = pickle.load(f)
+        df = pd.read_pickle(f)
     return df.drop(columns=["Load-1","Load-24"])
 countries = ["BG", "GR", "HR", "RO", "RS", "SI"]
 country_dict = {
@@ -194,7 +194,7 @@ def createMapValues(start=0,end=0):
     indicators = pd.DataFrame.from_dict(values,orient='index').transpose()
     indicators[geoplot_columns] = indicators[geoplot_columns].astype(float)
     with open('data/clean/balkan.pkl', 'rb') as f:
-        geo = pickle.load(f)
+        geo = pd.read_pickle(f)
     merged = gpd.GeoDataFrame(geo.merge(indicators, on='ISO', how='left'))
     return merged
     
@@ -237,7 +237,7 @@ def update_map(column,start=0,end=0):
     
     return fig, fig2
 def generate_table(series, max_rows=10):
-    dataframe = pd.DataFrame({'Metric':series.index, 'Value':series.values})
+    dataframe = pd.DataFrame({'Metric':series.index, 'Value':series.values}).round(3)
     header = [html.Thead(html.Tr([html.Th(col) for col in dataframe.columns]))]
     body = [html.Tbody([
             html.Tr([
@@ -259,7 +259,6 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
         n = len(countries_clean)
         clist = []
         [clist.append(country_dict[x]) for x in countries_clean]
-        print(clist)
         fig = make_subplots(rows=int((n+1)/2), cols=2,
                 vertical_spacing = 0.25,
                 subplot_titles=clist)
@@ -299,7 +298,6 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
         j=1
         k=1
         for i,code in enumerate(countries_clean):
-                print(k,j)
                 erra[i] = predOneDayOneCode(code,k,j)
                 if k==j and j==1: j=j+1;
                 elif j>k: k=k+1; j=j-1;
@@ -318,9 +316,7 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
                 ))
         metr_list=[]
         [metr_list.append(x) for x in erra]
-        table = pd.concat(metr_list, axis=1)
-        print("PLOTS")
-        print(table)
+        table = pd.concat(metr_list, axis=1).round(3)
         return fig,0,table.reset_index(names=["Metric"])
 # %%
 
