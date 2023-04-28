@@ -6,12 +6,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+
 import dash
 from dash import html,Input,Output,dcc
 from dash.dependencies import Input, Output, State
 from dash import Dash, dash_table
 import geopandas as gpd
-
+import dash_bootstrap_components as dbc
 
 path = './'
 
@@ -237,45 +238,37 @@ def update_map(column,start=0,end=0):
     return fig, fig2
 def generate_table(series, max_rows=10):
     dataframe = pd.DataFrame({'Metric':series.index, 'Value':series.values})
-    return html.Table([
-        html.Thead(
-            html.Tr([html.Th(col) for col in dataframe.columns])
-        ),
-        html.Tbody([
+    header = [html.Thead(html.Tr([html.Th(col) for col in dataframe.columns]))]
+    body = [html.Tbody([
             html.Tr([
                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
             ]) for i in range(min(len(dataframe), max_rows))
-        ])
-    ])
+        ])]
+    table = table = dbc.Table(header + body, bordered=True)
+    return table
 
 def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1","Price-2"]):
-        print("start")
         countries = ["BG", "HR", "RO","SI"]
         countries_clean=[]
         for i,code in enumerate(countries):
-                print(i,code)
                 try: 
                         test=load_augumented(code).loc[day]
-                        print(test.isnull().values.any())
                 except: print("Date for this day does not exist") 
                 else: 
                         if test.shape[0]==24: countries_clean.append(code)
-        print(countries_clean)
         n = len(countries_clean)
-        print(n)
         clist = []
         [clist.append(country_dict[x]) for x in countries_clean]
-        fig = make_subplots(rows=int(n/2), cols=2,
+        print(clist)
+        fig = make_subplots(rows=int((n+1)/2), cols=2,
                 vertical_spacing = 0.25,
                 subplot_titles=clist)
 
         def predOneDayOneCode(code,row,col):
                 df = load_augumented(code).drop(columns=exclude_features)
-                print(df.isnull().values.any())
                 model, params, selected_features, err, predictions = train_model_country_day(df, day, 12, model_type="rf")
                 def rolling(dataframe):
                         return dataframe.rolling(window=roll_window).mean()
-                print(selected_features)
                 
                 
                 df = df.loc[day]
@@ -283,14 +276,14 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
                 fig.add_trace(go.Scatter(x=df.index, 
                                         y=df["DayAheadPrice"], 
                                         name="Real price",
-                                        mode="lines",
+                                        mode="lines+markers",
                                         line_color="blue",),
                                         row=row,col=col)  
                 
                 fig.add_trace(go.Scatter(x=predictions.index, 
                                         y=predictions, 
                                         name="Prediction",
-                                        mode="lines",
+                                        mode="lines+markers",
                                         line_color="orange",),
                                         row=row,col=col)  #
 
@@ -299,17 +292,19 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
                         showlegend=False)
                 
                 #return fig, selected_features, err
-                return 0
+                return err.rename(country_dict[code])
         #figa=[None]*n
         #sfa=[None]*n
-        #erra=[None]*n
+        erra=[None]*n
         j=1
         k=1
         for i,code in enumerate(countries_clean):
-                predOneDayOneCode(code,k,j)
-                if k==j and j==1: j=j+1
-                elif k==j and j==2: j=j-1
-                elif j>k: k=k+1
+                print(k,j)
+                erra[i] = predOneDayOneCode(code,k,j)
+                if k==j and j==1: j=j+1;
+                elif j>k: k=k+1; j=j-1;
+                elif k>j: j=j+1;
+                elif k==2 and j==2: k=k+1; j=j-1;
         #code = "SI"
         #figa, sfa, erra=predOneDayOneCode(code,1,1)
         #print("aaskdjflöaksjdlfkjaskldjfkajdfölaj")
@@ -321,9 +316,22 @@ def plotDayPrediction(day,n_features,model_type='rf',exclude_features=["Price-1"
                 xanchor="right",
                 x=1
                 ))
-        print("finished")
-        return fig,0,0
+        metr_list=[]
+        [metr_list.append(x) for x in erra]
+        table = pd.concat(metr_list, axis=1)
+        print("PLOTS")
+        print(table)
+        return fig,0,table.reset_index(names=["Metric"])
 # %%
 
 
+def generate_dataframe_table(dataframe, max_rows=10):
+    header = [html.Thead(html.Tr([html.Th(col) for col in dataframe.columns]))]
+    body = [html.Tbody([
+            html.Tr([
+                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+            ]) for i in range(min(len(dataframe), max_rows))
+        ])]
+    table = table = dbc.Table(header + body, bordered=True)
+    return table
 

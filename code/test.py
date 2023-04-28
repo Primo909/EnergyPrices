@@ -206,10 +206,13 @@ tabs = html.Div(
                     tabClassName="flex-grow-1 text-center",),
                 dbc.Tab(label="Price Prediction for one Day",
                     tab_id="tab-3",
+                    tabClassName="flex-grow-1 text-center",),
+                dbc.Tab(label="Contributions",
+                    tab_id="tab-4",
                     tabClassName="flex-grow-1 text-center",)
             ],
             id="tabs",
-            active_tab="tab-1",
+            active_tab="tab-4",
         ),
         html.Div(id="content"),
     ]
@@ -315,12 +318,37 @@ tab3_content=html.Div([
                     dbc.Card(dbc.CardBody([dcc.Graph(id="graph_one_day")]))
                 ], width=12),
                 dbc.Col([
-                    drawText("The countries displayed are not always the same, since some countries have missing values for the DayAheadPrice or rather the entire day is missing from the dataset. Used features are selected based on mutual information and optimized for each country. Importantly the only feature that is time dependent is Price-24. Republic of Serbia will always be missing, since the dataset of this country is problematic when doing this prediction.","p")
+                    dbc.Card(dbc.CardBody([html.Div(id='one_day_table')])),
+                ], width=12),
+                dbc.Col([
+                    drawText("In the latter half of the year, the results will be better, because there will be more training data availeable. The countries displayed are not always the same, since some countries have missing values for the DayAheadPrice or rather the entire day is missing from the dataset. Used features are selected based on mutual information and optimized for each country. Importantly the only feature that is time dependent is Price-24. Republic of Serbia will always be missing, since the dataset of this country is problematic when doing this prediction.","p")
                 ], width=12),
             ], align='center'),      
             ]), 
     )
 ])
+
+tab4_content=html.Div([
+    dbc.Card(
+        dbc.CardBody([
+            dbc.Row([
+                dbc.Col([
+                    drawText("Contributions in the Project")
+                ], width=12),
+            ], align='center'), 
+            html.Br(),
+            dbc.Row([
+                dbc.Col([
+                    html.P("Jaka Godec collected the raw data from the API, did the data preparation, data Fusion. He developed most of the code for the machine learning models, as well as some code of the geodata visualization."),
+                        html.Br(),
+                    html.P("Kevin Steiner designed and implemented the dashboard, dashboard interactivity and extracted new information from the data. He modified the models to fit different prediction usecases and explored different sets of hyperparameters.")
+                ], width=12),
+            ], align='center',),      
+            ]), 
+    )
+])
+
+
 
 @app.callback(Output("content", "children"), [Input("tabs", "active_tab")])
 def switch_tab(at):
@@ -330,6 +358,8 @@ def switch_tab(at):
         return tab2_content
     elif at == "tab-3":
         return tab3_content
+    elif at == "tab-4":
+        return tab4_content
     return html.P("This shouldn't ever be displayed...")
 
 @app.callback(
@@ -379,12 +409,16 @@ def update_map_callback1(column,start,end):
 # Run app and display result inline in the notebook
 
 @app.callback(
-    Output(component_id='graph_one_day', component_property='figure'),
+    [Output(component_id='graph_one_day', component_property='figure'),
+        Output('one_day_table', 'children'),],
     Input(component_id='day_chooser', component_property='date'),
 )
 def update_plotDayPrediction(date,n_features=12,model_type='rf',exclude_features=["Price-1","Price-2"]):
-    fig,a,b = plotDayPrediction(date,n_features,model_type='rf',exclude_features=["Price-1","Price-2"])
-    return update_graph(fig).update_layout(height=1200, width=1200)
+    fig,a,table = plotDayPrediction(date,n_features,model_type='rf',exclude_features=["Price-1","Price-2"])
+    print(table)
+    table = generate_dataframe_table(table) 
+    print(table)
+    return update_graph(fig).update_layout(height=1200, width=1200),table
 
 
 app.run_server(debug=True,port=8660)

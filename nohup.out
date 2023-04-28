@@ -1,0 +1,8 @@
+
+(org.gnome.Nautilus:20470): Gtk-WARNING **: 12:47:58.693: Duplicate child name in GtkStack: pythontex Example
+
+(org.gnome.Nautilus:20470): Gtk-WARNING **: 12:47:58.693: Duplicate child name in GtkStack: pythontex-files-document
+
+(org.gnome.Nautilus:20470): Gtk-WARNING **: 12:47:58.695: Duplicate child name in GtkStack: eduroam
+
+(org.gnome.Nautilus:20470): GLib-CRITICAL **: 12:48:19.359: Failed to set scheduler settings: Vorgang nicht zulässig
