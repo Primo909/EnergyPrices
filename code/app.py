@@ -82,7 +82,7 @@ def drawSliderPercent():
         dbc.Card(
             dbc.CardBody([
                 html.Div([
-                html.Label("Percent of Data used for training"),
+                html.Label("Percent of data used for training"),
                 dcc.Slider(10, 90,
                     value=30,
                     id='test_size'
@@ -191,7 +191,7 @@ def drawMapDrowdown():
 df = px.data.iris()
 
 # Build App
-app = Dash(__name__,external_stylesheets=[dbc.themes.FLATLY])
+app = Dash(__name__ , suppress_callback_exceptions=True,external_stylesheets=[dbc.themes.FLATLY])
 app.title = "Balkan Energy Price"
 
 tabs = html.Div(
@@ -238,7 +238,7 @@ tab1_content=html.Div([
                     drawDropdown()
                 ], width=3),
                 dbc.Col([
-                    drawText("Note: Bulgaria has the entire month of October 2022 missing and some data before and after.","p")
+                    drawText("Note: Bulgaria has the entire month of October 2022 missing as well as some data before and after.","p")
                 ], width=6),
             ], align='center'), 
             html.Br(),
@@ -321,7 +321,7 @@ tab3_content=html.Div([
                     dbc.Card(dbc.CardBody([html.Div(id='one_day_table')])),
                 ], width=12),
                 dbc.Col([
-                    drawText("In the latter half of the year, the results will be better, because there will be more training data availeable. The countries displayed are not always the same, since some countries have missing values for the DayAheadPrice or rather the entire day is missing from the dataset. Used features are selected based on mutual information and optimized for each country. Importantly the only feature that is time dependent is Price-24. Republic of Serbia will always be missing, since the dataset of this country is problematic when doing this prediction.","p")
+                    drawText("In the latter half of the year, the results will be better, because there will be more training data available. The countries displayed are not always the same, since some countries have missing values for the DayAheadPrice, or rather the entire day is missing from the dataset. Used features are selected based on mutual information and optimized for each country. Importantly the only feature that is time-dependent is Price-24. The Republic of Serbia will always be missing, since the dataset of this country is problematic when doing this prediction.","p")
                 ], width=12),
             ], align='center'),      
             ]), 
@@ -339,9 +339,9 @@ tab4_content=html.Div([
             html.Br(),
             dbc.Row([
                 dbc.Col([
-                    html.P("Jaka Godec collected the raw data from the API, did the data preparation, data Fusion. He developed most of the code for the machine learning models, as well as some code of the geodata visualization."),
+                    html.P("Jaka Godec collected the raw data from the API, did the data preparation, and data fusion. He developed most of the code for the machine learning models, as well as some code for the geodata visualization."),
                         html.Br(),
-                    html.P("Kevin Steiner designed and implemented the dashboard, dashboard interactivity and extracted new information from the data. He modified the models to fit different prediction usecases and explored different sets of hyperparameters.")
+                    html.P("Kevin Steiner designed and implemented the dashboard, dashboard interactivity and extracted new information from the data. He modified the models to fit different prediction use cases and explored different sets of hyperparameters.")
                 ], width=12),
             ], align='center',),      
             ]), 
